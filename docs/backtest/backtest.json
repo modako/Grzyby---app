@@ -5,12 +5,12 @@
  },
  "params_version": "0.2.0",
  "weather_source": "Open-Meteo Archive API: ERA5 / ERA5-Land reanalysis (observed weather, not forecasts)",
- "api_calls": 200.6,
+ "api_calls": 26.4,
  "climatology": {
   "status": "complete",
-  "point_years_missing_before": 50,
+  "point_years_missing_before": 0,
   "point_years_missing_now": 0,
-  "calls_used": 174.3
+  "calls_used": 0.0
  },
  "cells": [
   {
