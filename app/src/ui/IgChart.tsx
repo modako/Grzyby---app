@@ -70,7 +70,7 @@ export function IgChart({ width, series, rain, dates, uncertainFrom }: Props) {
           height={Math.max(h, r > 0 ? 1 : 0)} rx={2} fill={colors.rain} />;
       })}
       <SvgText x={width - right} y={rainTop + 10} fontSize={11} fill={colors.ink2} textAnchor="end">
-        max {rainMax.toFixed(0)} mm
+        {`max ${rainMax.toFixed(0)} mm`}
       </SvgText>
       <Line x1={left} x2={width - right} y1={rainTop + rainH} y2={rainTop + rainH} stroke={colors.ink2} />
       {dates.map((iso, d) =>
