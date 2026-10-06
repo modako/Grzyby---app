@@ -7,6 +7,7 @@ point and calendar month go to data/climatology/sm_quantiles.json.
 
 import json
 import logging
+import time
 from datetime import date, timedelta
 
 import numpy as np
@@ -57,8 +58,12 @@ def save_raw(year: int, data: dict) -> None:
     (RAW_DIR / f"{year}.json").write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
 
 
-def fetch(points: dict[str, tuple[float, float]], years: list[int], client: Client, budget: float) -> dict:
-    """Download missing point-years until done or the budget is reached. Returns a progress summary."""
+def fetch(points: dict[str, tuple[float, float]], years: list[int], client: Client, budget: float,
+          max_seconds: float | None = None) -> dict:
+    """Download missing point-years until done, the call budget or the time limit is reached.
+
+    Progress is saved after every batch, so an interrupted run loses at most one batch."""
+    started = time.monotonic()
     todo = [(y, pid) for y in years for pid in points if pid not in load_raw(y)["points"]]
     total_before = len(todo)
     spent_at_start = client.calls
@@ -69,20 +74,20 @@ def fetch(points: dict[str, tuple[float, float]], years: list[int], client: Clie
         for chunk in batches(missing, BATCH):
             weight = call_weight(len(VARIABLES), len(days), len(chunk))
             if client.calls - spent_at_start + weight > budget:
-                save_raw(year, raw)
                 return _progress(points, years, total_before, client.calls - spent_at_start, "budget reached")
+            if max_seconds is not None and time.monotonic() - started > max_seconds:
+                return _progress(points, years, total_before, client.calls - spent_at_start, "time limit reached")
             params = {**coord_params([points[p] for p in chunk]), "start_date": days[0].isoformat(),
                       "end_date": days[-1].isoformat(), "hourly": ",".join(VARIABLES), "models": "era5_land",
                       "timezone": "Europe/Warsaw"}
             try:
                 result = client.get(ARCHIVE_URL, params, weight)
             except LimitExceeded as exc:
-                save_raw(year, raw)
                 return _progress(points, years, total_before, client.calls - spent_at_start, f"API limit: {exc}")
             for pid, loc in zip(chunk, result):
                 raw["points"][pid] = daily_sm_0_28(loc["hourly"])
+            save_raw(year, raw)
             log.info("Climatology %d: %d/%d points", year, len(raw["points"]), len(points))
-        save_raw(year, raw)
     return _progress(points, years, total_before, client.calls - spent_at_start, "complete")
 
 
@@ -146,6 +151,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--meta", required=True)
     ap.add_argument("--budget", type=float, default=4500)
+    ap.add_argument("--max-minutes", type=float, default=40, help="stop in time to commit before the job timeout")
     ap.add_argument("--first-year", type=int, default=2016)
     ap.add_argument("--last-year", type=int, default=2025)
     args = ap.parse_args()
@@ -154,7 +160,7 @@ def main() -> None:
     years = list(range(args.first_year, args.last_year + 1))
     total = sum(call_weight(len(VARIABLES), len(season_dates(y)), len(points)) for y in years)
     log.info("Climatology for %d points x %d years: %.0f API calls in total (one-off)", len(points), len(years), total)
-    progress = fetch(points, years, Client(), args.budget)
+    progress = fetch(points, years, Client(), args.budget, max_seconds=args.max_minutes * 60)
     log.info("Progress: %s", progress)
     build_quantiles(years)
     (CLIM_DIR / "progress.json").write_text(json.dumps({**progress, "points": len(points), "years": years,

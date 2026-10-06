@@ -39,9 +39,10 @@ jobs:
           fi
           git fetch -q origin gh-pages
           git show origin/gh-pages:static/cells_meta.json > /tmp/cells_meta.json
-          python -m pipeline.weather.climatology --meta /tmp/cells_meta.json --budget 4500
+          python -m pipeline.weather.climatology --meta /tmp/cells_meta.json --budget 4500 --max-minutes 40
           cat data/climatology/progress.json
       - name: Commit climatology
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

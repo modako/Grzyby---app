@@ -41,7 +41,8 @@ class Client:
         self._throttle(weight)
         for attempt in range(6):
             try:
-                resp = requests.get(url, params=params, timeout=180, headers={"User-Agent": USER_AGENT})
+                # Open-Meteo sometimes leaves a request hanging; a short read timeout + retry is much faster.
+                resp = requests.get(url, params=params, timeout=(15, 60), headers={"User-Agent": USER_AGENT})
             except (requests.ConnectionError, requests.Timeout) as exc:
                 self._backoff(attempt, str(exc))
                 continue

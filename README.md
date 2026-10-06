@@ -26,7 +26,7 @@ Indeks łączy **potencjał lasu** (gatunek, wiek i siedlisko drzewostanu z Bank
 
 ## Status
 
-Etap 0 (setup i specyfikacja) zrobiony, etap 1 (dane o lasach, łódzkie) zrobiony, etap 2 (pogoda) w toku. Plan wszystkich etapów jest w `CLAUDE.md`.
+Etap 0 (setup i specyfikacja) zrobiony, etap 1 (dane o lasach, łódzkie) zrobiony, etap 2 (pogoda) zrobiony, czeka na akceptację. Dane: https://modako.github.io/Grzyby---app/. Plan wszystkich etapów jest w `CLAUDE.md`.
 
 ## Jak zbudować dane o lasach (etap 1)
 
