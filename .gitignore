@@ -7,6 +7,9 @@ data/*
 # Source files downloaded by hand (cannot be fetched from the cloud environment)
 !data/manual/
 !data/manual/**
+# Soil moisture climatology (ERA5-Land), committed so the one-off download can resume across runs
+!data/climatology/
+!data/climatology/**
 
 # Download cache (BDL, GDOS, OSM, Open-Meteo archive)
 .cache/

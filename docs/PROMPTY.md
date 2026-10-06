@@ -266,3 +266,24 @@ Etap 6 według CLAUDE.md i docs/SPEC.md: powiadomienia, offline, dynamiczne zaka
 
 Raport: co działa na Androidzie i iOS, instrukcje, koszty (jeśli jakieś są), lista kontrolna. Stop.
 ```
+
+
+## Etap 2 (wersja zaktualizowana przez właściciela, 2026-10-06)
+
+Ta wersja zastępuje prompt etapu 2 powyżej.
+
+```text
+Etap 2 według CLAUDE.md i docs/SPEC.md: pogoda, składowa W i automatyzacja.
+
+Ważne: z mojego środowiska część zewnętrznych serwerów zrywa połączenie (tak było z OSM). Dlatego każde wywołanie Open-Meteo (prognoza, archiwum ERA5-Land, backtest) uruchamiaj w GitHub Actions, a nie lokalnie. Najpierw sprawdź, czy Open-Meteo odpowiada z Twojego środowiska. Jeśli tak, możesz testować lokalnie, ale produkcyjnie i tak liczy Actions. Pracuję tylko na telefonie: nic nie każ mi robić w ustawieniach na komputerze, a kroki na GitHubie opisz na aplikację GitHub albo przeglądarkę w telefonie.
+
+1. Punkty siatki pogodowej: unikalne punkty 0,1° z data/static/cells_meta.json (tylko te z lasem, bez komórek całkowicie zakazanych).
+2. Open-Meteo: prognoza dni -30..+14 (opad, Tśr, Tmin, Tmax, ET0, wilgotność gleby 0-28 cm uśredniona do doby), wiele współrzędnych w zapytaniu, pauzy, ponawianie 429/5xx. Policz wywołania przed pierwszym pełnym biegiem. Klimatologia ERA5-Land ok. 10 lat w data/climatology/, percentyl względem miesiąca, zgodność warstw gleby (decyzja w SPEC.md).
+3. M, L, T, S, W wg SPEC.md w wariantach W_myc i W_frost; przedział niepewności dni +8..+14 (min-max z kilku modeli) albo prostszy sposób.
+4. Wyjście: data/daily/latest.json + kopia z datą: { generated_at, params_version, dates, points: { point_id: { w_myc, w_frost, w_low, w_high, rain, tmean } } }.
+5. Funkcja IG = W · (0,4 + 0,6·H) jako kontrakt w SPEC.md + przypadki testowe w JSON (dla aplikacji w etapie 3) + pytest.
+6. Backtest w Actions: 5 komórek, VIII-X 2025, PNG opad (słupki) + IG (linia); czy IG rośnie 7-14 dni po deszczu i spada po przymrozkach; jak obejść brak archiwalnych prognoz.
+7. Workflow: codziennie ok. 04:00 czasu polskiego (zmiana czasu), ręczne uruchamianie, publikacja latest.json i plików statycznych pod stałym URL (GitHub Pages; przy prywatnym repo osobne publiczne repo na dane), permissions w pliku, uruchamianie po scaleniu (właściciel tylko klika Merge w aplikacji GitHub).
+
+Raport po polsku: wywołania API na uruchomienie, czas, rozmiar latest.json, wykresy backtestu z interpretacją, URL z danymi, co kliknąć na telefonie, problemy. Stop.
+```

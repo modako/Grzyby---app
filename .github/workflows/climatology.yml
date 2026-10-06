@@ -1,0 +1,51 @@
+# One-off soil moisture climatology (ERA5-Land, 10 years) for the percentile in M.
+# ~9 900 API calls in total, so it is spread over several days (budget per run below
+# the hourly limit of 5 000). Finished runs make no API calls.
+name: soil-climatology
+
+on:
+  schedule:
+    - cron: "41 0 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/weather/climatology.py"
+      - ".github/workflows/climatology.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: climatology
+  cancel-in-progress: false
+
+jobs:
+  climatology:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -q -r pipeline/requirements.txt
+      - name: Weather points from the published static data
+        run: |
+          if ! git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            echo "Static data not published yet (gh-pages missing); will retry on the next run."; exit 0
+          fi
+          git fetch -q origin gh-pages
+          git show origin/gh-pages:static/cells_meta.json > /tmp/cells_meta.json
+          python -m pipeline.weather.climatology --meta /tmp/cells_meta.json --budget 4500
+          cat data/climatology/progress.json
+      - name: Commit climatology
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/climatology
+          git commit -q -m "Soil moisture climatology progress" || { echo "No changes"; exit 0; }
+          for i in 1 2 3; do git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; git pull -q --rebase origin "${GITHUB_REF_NAME}"; done
+          exit 1

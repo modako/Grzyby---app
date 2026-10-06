@@ -1,6 +1,6 @@
 # SPEC: Indeks Grzybowy (IG)
 
-Wersja specyfikacji: **0.2** (etap 1: dane BDL i region łódzkie) · wersja parametrów modelu: **`params_version = "0.2.0"`** (0.2.0: parametry lasów spoza LP i maski z BDL, etap 1)
+Wersja specyfikacji: **0.3** (etap 2: pogoda, W, kontrakt IG) · wersja parametrów modelu: **`params_version = "0.2.0"`** (0.2.0: parametry lasów spoza LP i maski z BDL, etap 1)
 
 Źródło: `docs/research.md`, sekcje 1.3, 2.2 i 2.4 (wersja z przypisami: `docs/research_z_przypisami.md`).
 
@@ -201,6 +201,15 @@ Konwencja indeksów [P]: `P_{d−i}` to opad dnia `d−i`. Składowe M i L patrz
 
 `sigmoid(x) = 1 / (1 + e^(−x))`
 
+### 4.0 Dane pogodowe (etap 2, sprawdzone zapytaniami 2026-10-06)
+
+- **Model główny: ECMWF IFS** (`models=ecmwf_ifs` w Open-Meteo Forecast API) dla wszystkich zmiennych: `precipitation_sum`, `temperature_2m_mean`, `temperature_2m_min`, `et0_fao_evapotranspiration` (dzienne) oraz `soil_moisture_0_to_7cm`, `soil_moisture_7_to_28cm` (godzinowe). Powód: IFS ma **te same warstwy gleby co ERA5-Land** (0–7 i 7–28 cm) i ten sam schemat powierzchni lądu (ECMWF), więc percentyl względem klimatologii ERA5-Land jest spójny. Domyślny model Open-Meteo ma warstwy 0–1, 1–3, 3–9, 9–27 cm i braki danych w ostatnich dniach prognozy, więc odpada.
+- `past_days = 30`, `forecast_days = 15`: dni −30…+14, strefa czasowa Europe/Warsaw.
+- Wilgotność 0–28 cm = średnia dobowa z `(7·SM₀₋₇ + 21·SM₇₋₂₈) / 28` (średnia ważona grubością warstw).
+- Temperatura maksymalna nie jest pobierana, bo model jej nie używa (oszczędność wywołań).
+- Braki w danych: opad → 0, pozostałe → wartość z poprzedniego dnia (liczba uzupełnień w logu).
+- **Wywołania API** liczymy wzorem ze strony Open-Meteo: `max(1, max(v/10, dni/14 · v/10)) · lokalizacje`, gdzie v = zmienne × modele. Jedno dzienne uruchomienie dla 283 punktów to ok. **829 wywołań** (546 model główny + 283 przedział niepewności). Limit darmowy: 10 000 na dobę.
+
 ### 4.1 Wilgoć M ∈ [0, 1]
 
 ```
@@ -212,7 +221,9 @@ M          = 0,4 · sigmoid((API_d − 25) / 8) + 0,3 · sigmoid(Bilans14_d / 10
 
 - Wagi 0,4/0,3/0,3, środek 25 i skala 8 dla API, skala 10 dla bilansu: [R].
 - Okno bilansu `i = 1..14` (czyli bez dnia `d`): [P]. Research mówi „Σ z 14 dni”.
-- Klimatologia SM: ERA5-Land z Open-Meteo Archive, ok. 10 lat, ten sam punkt i miesiąc [R]. **Uwaga na warstwy:** prognoza Open-Meteo ma warstwy 0–1, 1–3, 3–9, 9–27 cm, a ERA5-Land 0–7 i 7–28 cm. Etap 2 musi uzgodnić głębokości (np. średnia ważona miąższością do 0–27/28 cm w obu źródłach) albo porównywać percentyl prognozy z klimatologią z tego samego modelu. Decyzję zapisać tutaj.
+- Klimatologia SM [R, decyzja etapu 2]: ERA5-Land (`models=era5_land`, Archive API), lata **2016–2025**, tylko **IV–XI** (miesiące z S > 0), dla każdego punktu siatki. Przechowujemy kwantyle 0, 5, …, 100% dziennej wilgotności 0–28 cm per punkt i miesiąc (`data/climatology/sm_quantiles.json`); percentyl to interpolacja liniowa między kwantylami. Wymagane co najmniej 5 lat danych; bez klimatologii `SMpct = 0,5` (mediana) i M opiera się tylko na opadzie.
+- Zgodność warstw: rozwiązana przez wybór ECMWF IFS w prognozie (4.0). Ryzyko szczątkowe: IFS (9 km) i ERA5-Land (ok. 9 km, inne wymuszenie) mogą mieć różny poziom średniej wilgotności. Do sprawdzenia: porównać 30 dni wstecz z IFS z ERA5-Land dla tych samych dni.
+- Pobranie klimatologii kosztuje jednorazowo ok. **9 900 wywołań**, więc workflow `soil-climatology` rozkłada je na co najmniej 3 dni (≤ 4 500 na bieg, poniżej limitu godzinowego 5 000). Postęp: `data/climatology/progress.json`.
 
 ### 4.2 Wyzwalacz z opóźnieniem L ∈ [0, 1]
 
@@ -263,7 +274,18 @@ Wagi 0,5/0,5: [R]. `W_frost ≥ W_myc` zawsze, bo jedyną różnicą jest łagod
 
 ### 4.6 Niepewność dni +8…+14
 
-Dla dni +8…+14 publikujemy przedział `w_low`, `w_high` (min i max `W_myc` z kilku modeli Open-Meteo, np. ICON, ECMWF IFS, GFS, albo z ansambli) [R]. Sposób dobierzemy w etapie 2 pod limit wywołań API. Dla dni 0…+7 `w_low = w_high = W_myc`.
+Dla dni +8…+14 publikujemy przedział `w_low`, `w_high` [R] = min i max `W_myc` z trzech modeli: **ECMWF IFS** (główny), **GFS** (`gfs_seamless`) i **ECMWF AIFS** (`ecmwf_aifs025_single`) [decyzja etapu 2]. ICON odpada, bo prognozuje tylko 7 dni. Dla modelu dodatkowego podmieniamy opad, temperatury i ET₀ w dniach prognozy, a wilgotność gleby i historia (dni −30…−1) zostają z IFS. Ansamble byłyby dokładniejsze, ale kosztują wielokrotnie więcej wywołań. Dla dni 0…+7 `w_low = w_high = W_myc`. Przedział liczymy tylko dla `W_myc`.
+
+### 4.7 Plik dzienny `latest.json` (kontrakt dla aplikacji)
+
+```
+{ generated_at, params_version, dates: [15 dni od dziś], uncertain_from_day: 8,
+  models: {main, band}, sm_climatology_points, attribution,
+  points: { "<lat>_<lon>": { w_myc: [15 × int], w_frost: [...], w_low: [...], w_high: [...],
+                             rain: [15 × mm, 1 miejsce po przecinku], tmean: [15 × °C] } } }
+```
+
+Identyfikator punktu jak w `cells_meta.json` (np. `51.6_20.1`). W zaokrąglone do liczb całkowitych (połówki w górę). Kopia z datą: `daily/RRRR-MM-DD.json` (90 dni wstecz).
 
 ---
 
@@ -289,7 +311,16 @@ IG_all = max_g IG_g                          (filtr „wszystkie gatunki”)
 
 ### 5.1 Przykłady kontraktowe (do testów pipeline i aplikacji)
 
-Pełny zestaw przypadków testowych powstanie w etapie 2. Przykłady startowe:
+Funkcja kontraktowa (Python: `pipeline/ig.py`, w aplikacji ta sama logika w TypeScript):
+
+```
+ig_g      = W[wariant(g)] · (0,4 + 0,6 · H_g)        wariant: opienka, gaska → frost; reszta → myc
+IG        = zaokr(ig_g)                               zaokr(x) = floor(x + 0,5)  (= Math.round w JS)
+IG_all    = IG gatunku z największym ig_g
+kolor     = szary, jeśli komórka zakazana; inaczej zielony ≥ 60, żółty ≥ 35, czerwony < 35 (z wartości zaokrąglonej)
+```
+
+**Pełny zestaw przypadków testowych:** `docs/contract/ig_cases.json` (16 przypadków: progi kolorów, zaokrąglenia, wariant frost, filtr „wszystkie”, zakaz). Testy pipeline (`pipeline/tests/test_ig.py`) i aplikacji (etap 3) czytają ten sam plik. Przykłady:
 
 | W | H | IG (dokładnie) | IG (zaokr.) | Kolor (bez zakazu) |
 |---|---|---|---|---|
@@ -385,8 +416,9 @@ To jedyne źródło prawdy dla liczb w modelu. W etapie 1–2 trafi 1:1 do pliku
 
 1. ~~**Etap 1:** rzeczywiste nazwy warstw i pól BDL~~ Rozstrzygnięte: `docs/DATA_SOURCES.md`. WFS nie daje własności, wysokości ani domieszek.
 2. **Etap 1:** czy parki krajobrazowe, Natura 2000 lub użytki ekologiczne mają lokalne zakazy zbioru (domyślnie nie maskujemy).
-3. **Etap 2:** uzgodnienie warstw wilgotności gleby między prognozą a ERA5-Land (4.1).
-4. **Etap 2:** sposób liczenia `w_low`/`w_high` w limicie 10 000 wywołań/dobę (4.6).
+3. ~~**Etap 2:** uzgodnienie warstw gleby~~ Rozstrzygnięte: ECMWF IFS w prognozie (4.0). Zostaje sprawdzenie różnicy poziomów IFS vs ERA5-Land.
+4. ~~**Etap 2:** `w_low`/`w_high`~~ Rozstrzygnięte: IFS + GFS + AIFS (4.6).
 5. **Etap 2 (backtest):** czy L reaguje na serie umiarkowanych opadów (4.2) i czy kara za przymrozek nie znika za szybko (4.3).
 6. **Etap 3:** czy pokazywać ostrzeżenia toksykologiczne (2.3).
 7. **Etap 4 (kalibracja):** wszystkie wartości [P] w pierwszej kolejności; ewentualnie osobne S dla opieniek i gąsek.
+8. **Wnioski z backtestu VIII–X 2025** (`docs/backtest/README.md`): (a) twardy zakaz upału daje 1–2-dniowe skoki IG do zera w środku szczytu, więc warto rozważyć łagodne przejście; (b) październik wychodzi bardzo nisko (T ≈ 0,3 przy 8 °C), co kłóci się z sezonem podgrzybka i opieńki, więc warto rozważyć szersze `t_width` jesienią; (c) reguła przymrozku nie została sprawdzona na danych (brak 2 mroźnych nocy w 3 dniach).

@@ -1,0 +1,50 @@
+# Static forest layer (stage 1) -> gh-pages/static/. Rebuilt when its inputs change and monthly.
+# On feature branches it only checks that the build works from GitHub's servers.
+name: static-forest-data
+
+on:
+  schedule:
+    - cron: "17 1 1 * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "pipeline/build_static.py"
+      - "pipeline/cells.py"
+      - "pipeline/suitability.py"
+      - "pipeline/preview*.py"
+      - "pipeline/preview_template.html"
+      - "pipeline/sources/**"
+      - "pipeline/config/model_params.yaml"
+      - "pipeline/config/region.yaml"
+      - "data/manual/**"
+      - ".github/workflows/static.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -q -r pipeline/requirements.txt
+      - run: python -m pipeline.build_static
+      - name: Summary
+        run: python -c "import json; d=json.load(open('data/static/cells_meta.json')); print('cells', len(d['cells']), 'points', len(d['points']))"
+      - name: Publish (main only; feature branches only test the build)
+        if: github.ref_name == 'main'
+        run: |
+          .github/scripts/gh-pages-checkout.sh
+          mkdir -p site/static && cp data/static/* site/static/ && cp data/preview/preview.html site/static/
+          .github/scripts/site-index.sh
+          .github/scripts/gh-pages-push.sh "Static forest data $(date -u +%F)"

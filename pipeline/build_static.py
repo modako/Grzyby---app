@@ -65,7 +65,9 @@ def main() -> None:
         "weather_grid_deg": params["weather_grid_deg"],
         "cells": {c: [round(la, 5), round(lo, 5), p] for c, la, lo, p in
                   zip(cells["cell"], cells["lat"], cells["lon"], cells["point_id"])},
-        "points": {p: [float(p.split("_")[0]), float(p.split("_")[1])] for p in sorted(set(cells["point_id"]))},
+        # Weather points needed by the daily run: only those with at least one non-banned cell.
+        "points": {p: [float(p.split("_")[0]), float(p.split("_")[1])]
+                   for p in sorted(set(cells.loc[~cells["banned"], "point_id"]))},
     }
     (STATIC_DIR / "cells_meta.json").write_text(json.dumps(meta, separators=(",", ":")), encoding="utf-8")
     (STATIC_DIR / "attribution.json").write_text(
