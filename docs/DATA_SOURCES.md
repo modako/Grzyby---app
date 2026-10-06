@@ -75,3 +75,20 @@ Do not use `ogr2ogr -where` on the OSM driver; filter in Python (`pipeline/sourc
 
 Łódzkie: 131 military polygons (of which 40 count as no-entry: `landuse=military` or area-type `military=*`;
 64 are single bunkers), 64 442 forest/wood polygons (~3 700 km²).
+
+## Open-Meteo (verified 2026-10-06)
+
+- Docs site `open-meteo.com` is blocked in the cloud environment; the APIs work. Call-weight formula and limits were
+  taken from the website source (github.com/open-meteo/open-meteo-website: `results-preview.svelte`, `pricing`,
+  `terms`): weight = `max(1, max(v/10, days/14 * v/10)) * locations`, v = variables x models; free tier 600/min,
+  5 000/h, 10 000/day, non-commercial.
+- Forecast `models=ecmwf_ifs`: daily `precipitation_sum`, `temperature_2m_mean`, `temperature_2m_min`,
+  `et0_fao_evapotranspiration` and hourly `soil_moisture_0_to_7cm`, `soil_moisture_7_to_28cm` complete for
+  `past_days=30`, `forecast_days=15`.
+- Default (best_match) soil layers are 0-1, 1-3, 3-9, 9-27 cm with nulls after ~37 days of the 45-day window.
+- `icon_seamless` daily data covers only 7 of 15 days; `gfs_seamless` covers 15.
+- Archive `models=era5_land`: hourly soil 0-7 / 7-28 cm OK; daily `precipitation_sum` and `et0` came back null in a
+  test, so the backtest takes daily weather from the default archive model (falls back to `era5`).
+- From the Claude cloud IP the archive quickly answers "Daily API request limit exceeded" (shared IP). All
+  production calls run on GitHub Actions.
+- Measured on Actions: 5 points = 14.6 calls, 4 s, latest.json 2.1 kB; backtest incl. 5-point climatology = 200 calls.

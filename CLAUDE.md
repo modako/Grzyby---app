@@ -63,8 +63,9 @@ Pełne prompty etapów: `docs/PROMPTY.md`. Status etapów:
 | Etap | Status |
 |---|---|
 | 0 | zrobiony |
-| 1 | zrobiony (łódzkie), czeka na akceptację |
-| 2–6 | nie rozpoczęte |
+| 1 | zrobiony (łódzkie) |
+| 2 | w toku (gałąź `claude/etap-2-pogoda`) |
+| 3–6 | nie rozpoczęte |
 
 ## Repozytorium
 
@@ -79,4 +80,6 @@ Pełne prompty etapów: `docs/PROMPTY.md`. Status etapów:
   - `sdi.gdos.gov.pl`: serwer GDOŚ sam odrzuca chmurę (filtr Incapsula, 403). Pliki parków narodowych i rezerwatów pobrał ręcznie właściciel: `data/manual/gdos/` (opis w `SOURCES.md`). Nie próbuj pobierać ich automatycznie;
   - `download.geofabrik.de`, `overpass-api.de`: połączenie zrywane po stronie serwera. Dane OSM (lasy, tereny wojskowe) wyciąga workflow `.github/workflows/osm-extract.yml` na GitHub Actions i commituje do `data/manual/osm/`. Uruchamia się sam po zmianie `pipeline/config/region.yaml`;
   - `cdnjs.cloudflare.com`, `unpkg.com`, `mapserver.bdl.lasy.gov.pl`: nie są na liście dozwolonych (pakiety JS bierzemy z npm).
+- **Open-Meteo: produkcyjnie tylko z GitHub Actions** (prośba właściciela). Z chmury Claude archiwum Open-Meteo szybko zwraca „Daily API request limit exceeded” (wspólny adres IP). Lokalnie wolno najwyżej pojedyncze zapytania testowe.
+- Właściciel pracuje **tylko na telefonie**: kroki na GitHubie opisuj dla aplikacji GitHub albo przeglądarki w telefonie; zmiany trafiają do `main` przez Pull Request, który właściciel scala przyciskiem „Merge”.
 - Pliki źródłowe pobierane ręcznie trzymamy w `data/manual/` (wyjątek w `.gitignore`), razem ze źródłem, datą pobrania i sumą kontrolną.
