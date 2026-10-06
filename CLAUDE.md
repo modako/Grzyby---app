@@ -65,7 +65,8 @@ Pełne prompty etapów: `docs/PROMPTY.md`. Status etapów:
 | 0 | zrobiony |
 | 1 | zrobiony (łódzkie) |
 | 2 | zrobiony, czeka na akceptację (dane: https://modako.github.io/Grzyby---app/) |
-| 3–6 | nie rozpoczęte |
+| 3 | w toku (gałąź `claude/etap-3-aplikacja`) |
+| 4–6 | nie rozpoczęte |
 
 ## Repozytorium
 
@@ -82,4 +83,5 @@ Pełne prompty etapów: `docs/PROMPTY.md`. Status etapów:
   - `cdnjs.cloudflare.com`, `unpkg.com`, `mapserver.bdl.lasy.gov.pl`: nie są na liście dozwolonych (pakiety JS bierzemy z npm).
 - **Open-Meteo: produkcyjnie tylko z GitHub Actions** (prośba właściciela). Z chmury Claude archiwum Open-Meteo szybko zwraca „Daily API request limit exceeded” (wspólny adres IP). Lokalnie wolno najwyżej pojedyncze zapytania testowe.
 - Właściciel pracuje **tylko na telefonie**: kroki na GitHubie opisuj dla aplikacji GitHub albo przeglądarki w telefonie; zmiany trafiają do `main` przez Pull Request, który właściciel scala przyciskiem „Merge”.
+- **Aplikacja (`app/`)**: Expo SDK 57, MapLibre RN 11 (API v11: `Map`, `Camera`, `GeoJSONSource`, `Layer` z `paint`/`layout`). Dokumentacja Expo (`docs.expo.dev`) i serwery Google Maven są zablokowane w chmurze Claude: API czytaj z `node_modules`, pakiety instaluj `EXPO_OFFLINE=1 npm install` w wersjach z `expo/bundledNativeModules.json`, a APK buduj tylko w workflow `android-apk`.
 - Pliki źródłowe pobierane ręcznie trzymamy w `data/manual/` (wyjątek w `.gitignore`), razem ze źródłem, datą pobrania i sumą kontrolną.
