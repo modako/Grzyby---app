@@ -64,7 +64,7 @@ Pełne prompty etapów: `docs/PROMPTY.md`. Status etapów:
 |---|---|
 | 0 | zrobiony |
 | 1 | zrobiony (łódzkie) |
-| 2 | w toku (gałąź `claude/etap-2-pogoda`) |
+| 2 | zrobiony, czeka na akceptację (dane: https://modako.github.io/Grzyby---app/) |
 | 3–6 | nie rozpoczęte |
 
 ## Repozytorium
