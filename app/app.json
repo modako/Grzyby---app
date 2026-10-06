@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Grzyby",
+    "slug": "grzyby",
+    "version": "0.3.0",
+    "scheme": "grzyby",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "pl.modako.grzyby"
+    },
+    "android": {
+      "package": "pl.modako.grzyby",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Aplikacja używa lokalizacji tylko po to, by pokazać Ci Twoje położenie na mapie lasów. Lokalizacja nie jest nigdzie wysyłana."
+        }
+      ]
+    ]
+  }
+}

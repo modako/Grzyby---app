@@ -287,3 +287,8 @@ Ważne: z mojego środowiska część zewnętrznych serwerów zrywa połączenie
 
 Raport po polsku: wywołania API na uruchomienie, czas, rozmiar latest.json, wykresy backtestu z interpretacją, URL z danymi, co kliknąć na telefonie, problemy. Stop.
 ```
+
+
+## Etap 3 (wersja zaktualizowana przez właściciela, 2026-10-06)
+
+Ta wersja zastępuje prompt etapu 3 powyżej. Najważniejsze różnice: krok 0 (gałąź w Claude-Adam), praca tylko na telefonie, wszystko sieciowe w GitHub Actions, APK bez komputera i płatnych kont (opcja A: Actions + prebuild + Gradle, opcja B: EAS), uwaga o wczesnej fazie modelu na ekranie Info, testy kontraktu IG w aplikacji.

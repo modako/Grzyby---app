@@ -1,0 +1,131 @@
+# Android APK without a computer or paid accounts (stage 3, option A):
+# expo prebuild + Gradle on GitHub's servers, APK published as a GitHub Release.
+#   main            -> release "apk-latest" (the version to install)
+#   other branches  -> pre-release "apk-test" (to try before merging)
+# A second job installs the APK on an Android emulator and saves screenshots to docs/screenshots/.
+name: android-apk
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "app/**"
+      - "docs/contract/**"
+      - ".github/workflows/android.yml"
+      - ".github/scripts/emulator-screenshots.sh"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Typecheck and tests (IG contract shared with the pipeline)
+        run: |
+          npx tsc --noEmit
+          npx jest
+
+      - name: Generate the Android project
+        run: npx expo prebuild --platform android --no-install
+        env:
+          CI: "1"
+          EXPO_NO_TELEMETRY: "1"
+
+      - name: Build release APK
+        working-directory: app/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a,x86_64
+
+      - name: Name the APK
+        id: apk
+        run: |
+          version=$(node -p "require('./app.json').expo.version")
+          name="grzyby-${version}-${GITHUB_SHA::7}.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "../$name"
+          ls -la "../$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: ${{ steps.apk.outputs.name }}
+          retention-days: 14
+
+      - name: Publish as a GitHub Release
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            tag=apk-latest; title="Grzyby ${{ steps.apk.outputs.version }} (najnowsza)"; extra=""
+          else
+            tag=apk-test; title="Grzyby ${{ steps.apk.outputs.version }} – wersja testowa (${GITHUB_REF_NAME})"; extra="--prerelease"
+          fi
+          notes="Plik do instalacji na Androidzie: ${{ steps.apk.outputs.name }}. Zbudowano z commita ${GITHUB_SHA::7} ($(date -u +%F))."
+          gh release delete "$tag" --yes --cleanup-tag || true
+          gh release create "$tag" "${{ steps.apk.outputs.name }}" --target "$GITHUB_SHA" --title "$title" --notes "$notes" $extra
+
+  screenshots:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+          path: apk
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run the app on an emulator and take screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash .github/scripts/emulator-screenshots.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: docs/screenshots
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/*.png
+          git commit -q -m "App screenshots from the emulator" || { echo "No changes"; exit 0; }
+          for i in 1 2 3; do git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; git pull -q --rebase origin "${GITHUB_REF_NAME}"; done
+          exit 1

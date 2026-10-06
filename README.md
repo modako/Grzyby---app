@@ -69,6 +69,17 @@ python -m pipeline.build_daily --estimate-only        # ile wywołań API zużyj
 
 Kontrakt IG dla aplikacji: `docs/contract/ig_cases.json`.
 
+## Aplikacja na telefon (etap 3)
+
+Kod w `app/` (Expo + React Native + MapLibre). Plik APK buduje automat `android-apk` na GitHubie:
+
+- wersja z gałęzi `main` trafia do **Releases → „Grzyby … (najnowsza)”**,
+- wersje testowe z innych gałęzi trafiają do **Releases → „wersja testowa”**.
+
+Adres danych dla aplikacji ustawia jeden plik: `app/src/config.ts`.
+
+Testy aplikacji (w tym kontrakt IG wspólny z Pythonem): `cd app && npx jest`.
+
 ## Źródła danych i atrybucje
 
 Open-Meteo (CC BY 4.0), © autorzy OpenStreetMap (ODbL), Bank Danych o Lasach (Lasy Państwowe), Generalna Dyrekcja Ochrony Środowiska. Szczegóły i daty pobrania pojawią się w `data/static/attribution.json` (etap 1).

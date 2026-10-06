@@ -1,6 +1,6 @@
 # SPEC: Indeks Grzybowy (IG)
 
-Wersja specyfikacji: **0.3** (etap 2: pogoda, W, kontrakt IG) · wersja parametrów modelu: **`params_version = "0.2.0"`** (0.2.0: parametry lasów spoza LP i maski z BDL, etap 1)
+Wersja specyfikacji: **0.4** (etap 3: aplikacja) · wersja parametrów modelu: **`params_version = "0.2.0"`** (0.2.0: parametry lasów spoza LP i maski z BDL, etap 1)
 
 Źródło: `docs/research.md`, sekcje 1.3, 2.2 i 2.4 (wersja z przypisami: `docs/research_z_przypisami.md`).
 
@@ -319,6 +319,8 @@ IG        = zaokr(ig_g)                               zaokr(x) = floor(x + 0,5) 
 IG_all    = IG gatunku z największym ig_g
 kolor     = szary, jeśli komórka zakazana; inaczej zielony ≥ 60, żółty ≥ 35, czerwony < 35 (z wartości zaokrąglonej)
 ```
+
+**Przedział w aplikacji (etap 3):** `w_low`/`w_high` są publikowane tylko dla `W_myc`. Dla gatunków `frost` aplikacja przesuwa `W_frost` o tę samą różnicę (`W_frost + (w_low − W_myc)`, nie mniej niż 0), a potem liczy IG jak wyżej. To przybliżenie po stronie aplikacji, a nie osobny model.
 
 **Pełny zestaw przypadków testowych:** `docs/contract/ig_cases.json` (16 przypadków: progi kolorów, zaokrąglenia, wariant frost, filtr „wszystkie”, zakaz). Testy pipeline (`pipeline/tests/test_ig.py`) i aplikacji (etap 3) czytają ten sam plik. Przykłady:
 
