@@ -1,0 +1,29 @@
+# Backtest cells (stage 2). H values are a snapshot from build_static with params 0.2.0,
+# so the backtest does not need the full static build.
+period: {start: "2025-08-01", end: "2025-10-31"}
+cells:
+  - name: "Lasy Spalskie (Spała)"
+    id: 881e2cdad7fffff
+    point: "51.6_20.1"
+    forest: "sosna 100%, 75 lat, bór świeży"
+    h: {borowik: 0.97, podgrzybek: 0.92, kozlarz: 0.11, maslak: 0.25, kurka: 0.95, rydz: 0.39, kania: 0.63, opienka: 0.51, gaska: 0.73}
+  - name: "Puszcza Pilicka (Przedbórz)"
+    id: 881e2e9701fffff
+    point: "51.1_19.9"
+    forest: "sosna 97%, 65 lat, bór świeży"
+    h: {borowik: 0.93, podgrzybek: 0.85, kozlarz: 0.12, maslak: 0.27, kurka: 0.89, rydz: 0.41, kania: 0.59, opienka: 0.47, gaska: 0.73}
+  - name: "Lasy Załęczańskie (Wieluń)"
+    id: 881e21418bfffff
+    point: "51.1_18.7"
+    forest: "sosna 100%, 71 lat, bór świeży"
+    h: {borowik: 0.97, podgrzybek: 0.98, kozlarz: 0.11, maslak: 0.30, kurka: 0.98, rydz: 0.50, kania: 0.55, opienka: 0.42, gaska: 0.98}
+  - name: "Bory pod Łaskiem"
+    id: 881e218b3dfffff
+    point: "51.7_18.8"
+    forest: "sosna 100%, 78 lat, bór świeży"
+    h: {borowik: 0.92, podgrzybek: 1.00, kozlarz: 0.10, maslak: 0.30, kurka: 1.00, rydz: 0.50, kania: 0.56, opienka: 0.42, gaska: 0.99}
+  - name: "Las liściasty na północ od Łodzi"
+    id: 881f5249a1fffff
+    point: "51.8_19.4"
+    forest: "dąb 35%, sosna 22%, brzoza 20%, 112 lat, las świeży"
+    h: {borowik: 0.34, podgrzybek: 0.19, kozlarz: 0.12, maslak: 0.03, kurka: 0.33, rydz: 0.04, kania: 0.56, opienka: 0.72, gaska: 0.07}

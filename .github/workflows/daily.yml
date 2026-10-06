@@ -1,0 +1,78 @@
+# Daily weather component W -> gh-pages/daily/latest.json (stage 2).
+# Runs at ~04:00 Polish time all year: two UTC crons, the guard keeps the one that is 04:00 local.
+name: daily-weather
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # 04:00 CEST (summer time)
+    - cron: "0 3 * * *"   # 04:00 CET (winter time)
+  workflow_dispatch:
+  push:
+    paths:
+      - "pipeline/**"
+      - ".github/workflows/daily.yml"
+      - ".github/scripts/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+
+      - run: pip install -q -r pipeline/requirements.txt
+
+      - name: Unit tests
+        run: python -m pytest -q pipeline/tests
+
+      - name: Test run on a feature branch (5 points, nothing published)
+        if: github.ref_name != 'main'
+        run: |
+          python -m pipeline.build_daily --backtest-points --out data/daily
+          cat data/daily/run_summary.json
+          python -c "import json; d=json.load(open('data/daily/latest.json')); print(json.dumps({k: d[k] for k in ['generated_at','params_version','dates','models','sm_climatology_points']})); p=next(iter(d['points'])); print(p, json.dumps(d['points'][p]))"
+
+      - name: Check out published data
+        if: github.ref_name == 'main'
+        run: .github/scripts/gh-pages-checkout.sh
+
+      - name: Guard (scheduled runs only at 04:00 Polish time, once a day)
+        id: guard
+        if: github.ref_name == 'main'
+        run: |
+          hour=$(TZ=Europe/Warsaw date +%H); today=$(TZ=Europe/Warsaw date +%F)
+          run=true
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "$hour" -lt 4 ] || [ -f "site/daily/$today.json" ]; then run=false; fi
+          fi
+          echo "Local time $(TZ=Europe/Warsaw date +%H:%M), run=$run"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+      - name: Static forest data (only if not published yet)
+        if: github.ref_name == 'main' && steps.guard.outputs.run == 'true' && hashFiles('site/static/cells_meta.json') == ''
+        run: |
+          python -m pipeline.build_static
+          mkdir -p site/static && cp data/static/* site/static/ && cp data/preview/preview.html site/static/
+
+      - name: Compute W and publish
+        if: github.ref_name == 'main' && steps.guard.outputs.run == 'true'
+        run: |
+          python -m pipeline.build_daily --meta site/static/cells_meta.json --out site/daily
+          cat site/daily/run_summary.json
+          # keep 90 days of dated copies
+          find site/daily -name "20??-??-??.json" -mtime +90 -delete
+          .github/scripts/site-index.sh
+          .github/scripts/gh-pages-push.sh "Daily weather $(TZ=Europe/Warsaw date +%F)"

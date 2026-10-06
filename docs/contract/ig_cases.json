@@ -1,0 +1,416 @@
+{
+ "description": "IG contract test cases (docs/SPEC.md, chapter 5). IG = W(variant of species) * (0.4 + 0.6 * H); round half up; colour from the rounded value; banned -> grey. species=null means all species (max over species).",
+ "params": {
+  "ig_base": 0.4,
+  "ig_h_weight": 0.6,
+  "color_green_min": 60,
+  "color_yellow_min": 35,
+  "variant": {
+   "opienka": "frost",
+   "gaska": "frost",
+   "default": "myc"
+  }
+ },
+ "cases": [
+  {
+   "name": "pine forest, good weather",
+   "input": {
+    "w_myc": 80,
+    "w_frost": 80,
+    "h": {
+     "borowik": 1.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 80,
+    "color": "green",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "weak forest caps a good day",
+   "input": {
+    "w_myc": 80,
+    "w_frost": 80,
+    "h": {
+     "borowik": 0.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 32,
+    "color": "red",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "H 0.5, W 100",
+   "input": {
+    "w_myc": 100,
+    "w_frost": 100,
+    "h": {
+     "borowik": 0.5,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 70,
+    "color": "green",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "yellow lower bound 35",
+   "input": {
+    "w_myc": 50,
+    "w_frost": 50,
+    "h": {
+     "borowik": 0.5,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 35,
+    "color": "yellow",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "yellow upper range",
+   "input": {
+    "w_myc": 75,
+    "w_frost": 75,
+    "h": {
+     "borowik": 0.6,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 57,
+    "color": "yellow",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "59.99 rounds to 60 = green",
+   "input": {
+    "w_myc": 85.7,
+    "w_frost": 85.7,
+    "h": {
+     "borowik": 0.5,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 60,
+    "color": "green",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "59.6 rounds up to 60",
+   "input": {
+    "w_myc": 59.6,
+    "w_frost": 59.6,
+    "h": {
+     "borowik": 0.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 1.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "kurka"
+   },
+   "expected": {
+    "ig": 60,
+    "color": "green",
+    "species": "kurka"
+   }
+  },
+  {
+   "name": "58.3 rounds down to 58",
+   "input": {
+    "w_myc": 58.3,
+    "w_frost": 58.3,
+    "h": {
+     "borowik": 0.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 1.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "kurka"
+   },
+   "expected": {
+    "ig": 58,
+    "color": "yellow",
+    "species": "kurka"
+   }
+  },
+  {
+   "name": "34.6 rounds up to 35 = yellow",
+   "input": {
+    "w_myc": 34.6,
+    "w_frost": 34.6,
+    "h": {
+     "borowik": 0.0,
+     "podgrzybek": 1.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "podgrzybek"
+   },
+   "expected": {
+    "ig": 35,
+    "color": "yellow",
+    "species": "podgrzybek"
+   }
+  },
+  {
+   "name": "34.4 rounds down to 34 = red",
+   "input": {
+    "w_myc": 34.4,
+    "w_frost": 34.4,
+    "h": {
+     "borowik": 0.0,
+     "podgrzybek": 1.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "podgrzybek"
+   },
+   "expected": {
+    "ig": 34,
+    "color": "red",
+    "species": "podgrzybek"
+   }
+  },
+  {
+   "name": "no weather = 0",
+   "input": {
+    "w_myc": 0,
+    "w_frost": 0,
+    "h": {
+     "borowik": 1.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 0,
+    "color": "red",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "banned is always grey",
+   "input": {
+    "w_myc": 90,
+    "w_frost": 90,
+    "h": {
+     "borowik": 1.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": true,
+    "species": "borowik"
+   },
+   "expected": {
+    "ig": 90,
+    "color": "grey",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "banned stays grey even when all species",
+   "input": {
+    "w_myc": 90,
+    "w_frost": 90,
+    "h": {
+     "borowik": 1.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": true,
+    "species": null
+   },
+   "expected": {
+    "ig": 90,
+    "color": "grey",
+    "species": "borowik"
+   }
+  },
+  {
+   "name": "opienka uses w_frost",
+   "input": {
+    "w_myc": 10,
+    "w_frost": 70,
+    "h": {
+     "borowik": 0.0,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 1.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": "opienka"
+   },
+   "expected": {
+    "ig": 70,
+    "color": "green",
+    "species": "opienka"
+   }
+  },
+  {
+   "name": "all species after frost: opienka wins",
+   "input": {
+    "w_myc": 40,
+    "w_frost": 70,
+    "h": {
+     "borowik": 0.9,
+     "podgrzybek": 0.0,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.5,
+     "gaska": 0.2
+    },
+    "banned": false,
+    "species": null
+   },
+   "expected": {
+    "ig": 49,
+    "color": "yellow",
+    "species": "opienka"
+   }
+  },
+  {
+   "name": "all species without frost = W * (0.4 + 0.6 H_max)",
+   "input": {
+    "w_myc": 60,
+    "w_frost": 60,
+    "h": {
+     "borowik": 1.0,
+     "podgrzybek": 0.8,
+     "kozlarz": 0.0,
+     "maslak": 0.0,
+     "kurka": 0.0,
+     "rydz": 0.0,
+     "kania": 0.0,
+     "opienka": 0.0,
+     "gaska": 0.0
+    },
+    "banned": false,
+    "species": null
+   },
+   "expected": {
+    "ig": 60,
+    "color": "green",
+    "species": "borowik"
+   }
+  }
+ ]
+}

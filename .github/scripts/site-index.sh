@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Small landing page for the published data.
+set -euo pipefail
+cat > site/index.html <<HTML
+<!doctype html><meta charset="utf-8"><title>Grzyby: dane</title>
+<h1>Grzyby: opublikowane dane</h1>
+<ul>
+<li><a href="daily/latest.json">daily/latest.json</a> (składowa pogodowa W, codziennie)</li>
+<li><a href="static/cells.geojson">static/cells.geojson</a> (komórki lasu, potencjał H)</li>
+<li><a href="static/cells_meta.json">static/cells_meta.json</a></li>
+<li><a href="static/attribution.json">static/attribution.json</a></li>
+<li><a href="static/preview.html">static/preview.html</a> (podgląd mapy)</li>
+</ul>
+<p>Aktualizacja: $(date -u +%Y-%m-%dT%H:%MZ). Dane: Open-Meteo.com (CC BY 4.0), BDL Lasy Państwowe, GDOŚ, © autorzy OpenStreetMap (ODbL).</p>
+HTML
