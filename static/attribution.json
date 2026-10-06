@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-10-06T10:11:38Z",
+  "sources": [
+    {
+      "name": "Bank Danych o Lasach (BDL), Lasy Państwowe",
+      "url": "https://wfs.bdl.lasy.gov.pl/geoserver/BDL/ows",
+      "layers": {
+        "BDL:RDLP_Katowice_wydzielenia": 23088,
+        "BDL:RDLP_Poznań_wydzielenia": 27269,
+        "BDL:RDLP_Radom_wydzielenia": 32875,
+        "BDL:RDLP_Warszawa_wydzielenia": 168,
+        "BDL:RDLP_Łódź_wydzielenia": 105583
+      },
+      "data_years": [
+        2026
+      ],
+      "downloaded": "2026-10-06",
+      "text": "Dane o drzewostanach: Bank Danych o Lasach, Lasy Państwowe (pobrano 2026-10-06)"
+    },
+    {
+      "name": "Generalna Dyrekcja Ochrony Środowiska",
+      "url": "https://www.gov.pl/web/gdos/dostep-do-danych-geoprzestrzennych",
+      "layers": [
+        "GDOS:ParkiNarodowe",
+        "GDOS:Rezerwaty"
+      ],
+      "downloaded": "2026-10-05",
+      "text": "Formy ochrony przyrody: Generalna Dyrekcja Ochrony Środowiska, dane pobrane 2026-10-05"
+    },
+    {
+      "name": "OpenStreetMap",
+      "url": "https://www.openstreetmap.org/copyright",
+      "license": "ODbL 1.0",
+      "data_timestamp": "2026-10-04T20:19:46Z",
+      "text": "© autorzy OpenStreetMap, ODbL 1.0"
+    },
+    {
+      "name": "geoBoundaries POL ADM1",
+      "url": "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/releaseData/gbOpen/POL/ADM1/geoBoundaries-POL-ADM1.geojson",
+      "license": "ODbL 1.0",
+      "text": "Granice województw: geoBoundaries (POL ADM1), © autorzy OpenStreetMap, ODbL"
+    },
+    {
+      "name": "H3",
+      "url": "https://h3geo.org",
+      "license": "Apache 2.0",
+      "text": "Siatka heksagonalna H3 (Uber)"
+    }
+  ]
+}
