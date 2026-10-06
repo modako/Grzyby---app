@@ -66,6 +66,11 @@ Pełne prompty etapów: `docs/PROMPTY.md`. Status etapów:
 | 1 | zrobiony (łódzkie), czeka na akceptację |
 | 2–6 | nie rozpoczęte |
 
+## Repozytorium
+
+- Główne repozytorium: **`modako/grzyby---app`**, gałąź `main` (od 2026-10-06; projekt przeniesiony na prośbę właściciela razem z historią).
+- `modako/Claude-Adam` (gałąź `claude/new-session-5aqwhf`) to stara kopia z etapów 0–1. Nie rozwijamy jej dalej.
+
 ## Uwagi o środowisku
 
 - Praca toczy się w sesjach Claude Code w chmurze (kontener tworzony na nowo w każdej sesji). Wszystko, co ma przetrwać, musi być w repo (commit + push).
