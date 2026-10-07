@@ -1,1 +1,1 @@
-{"status": "budget reached", "point_years_missing_before": 2780, "point_years_missing_now": 1498, "calls_used": 4468.7, "points": 283, "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "total_calls_estimate": 9865}
+{"status": "time limit reached", "point_years_missing_before": 1498, "point_years_missing_now": 506, "calls_used": 3457.8, "points": 283, "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025], "total_calls_estimate": 9865}
