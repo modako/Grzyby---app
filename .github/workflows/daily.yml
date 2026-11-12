@@ -1,11 +1,15 @@
 # Daily weather component W -> gh-pages/daily/latest.json (stage 2).
-# Runs at ~04:00 Polish time all year: two UTC crons, the guard keeps the one that is 04:00 local.
+# Runs at ~04:20 Polish time all year: two UTC crons, the guard keeps the one that is after 04:00 local.
+# GitHub may drop scheduled runs at busy times (it skipped the :00 crons on 2026-10-07), so the
+# minutes avoid the full hour and two later fallbacks run only if today's file is still missing.
 name: daily-weather
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # 04:00 CEST (summer time)
-    - cron: "0 3 * * *"   # 04:00 CET (winter time)
+    - cron: "23 2 * * *"   # 04:23 CEST (summer time)
+    - cron: "23 3 * * *"   # 04:23 CET (winter time)
+    - cron: "47 5 * * *"   # fallback
+    - cron: "47 9 * * *"   # fallback
   workflow_dispatch:
   push:
     paths:

@@ -27,7 +27,7 @@ Aplikacja mobilna (Android + iOS z jednego kodu) dla grzybiarzy w Polsce. Pokazu
 |---|---|
 | Pipeline (`pipeline/`) | Python 3.11+: geopandas, shapely, h3, requests, numpy (+ pandas, pyproj, pyogrio); testy: pytest |
 | Aplikacja (`app/`) | Expo (najnowszy stabilny SDK) + TypeScript + expo-router + `@maplibre/maplibre-react-native` (wymaga development build, nie Expo Go); build w chmurze przez EAS |
-| Automatyzacja | GitHub Actions, codziennie ok. 04:00 czasu polskiego (cron w UTC) |
+| Automatyzacja | GitHub Actions, codziennie ok. 04:20 czasu polskiego (cron w UTC, z zapasowymi terminami 07:47 i 11:47) |
 | Publikacja danych | statyczne pliki (np. GitHub Pages); bez własnego serwera |
 | Pogoda | Open-Meteo (Forecast + Archive/ERA5-Land), darmowe do użytku niekomercyjnego, limit 10 000 wywołań/dobę, atrybucja CC BY 4.0 |
 | Lasy i maska | BDL Lasów Państwowych (WFS/WMS/SHP), GDOŚ (WFS/SHP), OpenStreetMap (ODbL) |

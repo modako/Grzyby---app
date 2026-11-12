@@ -53,7 +53,7 @@ Wszystko liczy się samo na GitHubie (zakładka **Actions**):
 
 | Automat | Kiedy | Co robi |
 |---|---|---|
-| `daily-weather` | codziennie ok. 04:00 czasu polskiego, po każdym scaleniu zmian i ręcznie | pobiera pogodę z Open-Meteo (dni −30…+14), liczy składową W i publikuje `daily/latest.json` |
+| `daily-weather` | codziennie ok. 04:20 czasu polskiego (z dwoma zapasowymi terminami), po każdym scaleniu zmian i ręcznie | pobiera pogodę z Open-Meteo (dni −30…+14), liczy składową W i publikuje `daily/latest.json` |
 | `static-forest-data` | po zmianach w danych o lasach i raz w miesiącu | przelicza heksagony lasu (etap 1) i publikuje `static/` |
 | `soil-climatology` | codziennie w nocy, aż skończy | jednorazowo pobiera 10 lat wilgotności gleby (ERA5-Land), w porcjach mieszczących się w darmowym limicie |
 | `backtest` | po zmianach w modelu | liczy indeks za VIII–X 2025 i zapisuje wykresy w `docs/backtest/` |
